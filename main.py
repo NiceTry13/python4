@@ -1,16 +1,23 @@
-# This is a sample Python script.
+from aiogram import Bot, Dispatcher, executor, types
+import python_weather
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+bot = Bot(token="5544620807:AAF0TC3OgrYQ3OolPkI4UvQjw6lOIxWr2Vw")
+dp = Dispatcher(bot)
+client = python_weather.Client(format=python_weather.IMPERIAL, locale="ru-RU")
 
+@dp.message_handler()
+async def echo(message: types.Message):
+    weather = await client.find(message.text)
+    celsius = (weather.current.temperature - 32) * 5 / 9
+    resp_msg = weather.location_name + "\n"
+    resp_msg += f"Текущая температура: {round(celsius)}\n"
+    resp_msg += f"Состояние погоды: {weather.current.sky_text}\n"
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+    if celsius <=10:
+        resp_msg +="\n\nПрохладно! Одевайтесь теплее!"
+    else:
+        resp_msg +="\n\nТепло! Одевайтесь легко!"
+    await message.answer(resp_msg)
 
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+if __name__ == "__main__":
+    executor.start_polling(dp, skip_updates=True)
